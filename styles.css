@@ -1,0 +1,144 @@
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #006989;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column; /* Ensure vertical alignment */
+}
+
+.game-container {
+    text-align: center;
+    background-color: #005C78; /* Add a background color to the game container */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for better visibility */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center the game board */
+}
+
+h1 {
+    font-size: 2.5em;
+    margin: 0 0 20px 0; /* Adjust margins to place the title inside the frame */
+    color: #E88D67; /* Darker color for better readability */
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 5px;
+    margin-bottom: 20px;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    background-color: #F3F7EC;
+    border: 1px solid #686868;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cell:hover {
+    background-color: #f2f2f2;
+}
+
+.turn-indicator {
+    font-size: 1.5em;
+    margin: 10px 0;
+}
+
+.controls {
+    margin-top: 20px;
+}
+
+.controls button {
+    font-size: 1em;
+    padding: 10px 20px;
+    margin: 0 10px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.controls button:hover {
+    background-color: #0056b3;
+}
+
+#status-message {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.message-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 50px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    font-size: 2em;
+    z-index: 1000; /* Ensure it appears above all other elements */
+    display: none; /* Initially hidden */
+    animation: zoomOut 0.5s ease-in-out;
+}
+
+@keyframes zoomOut {
+    from {
+        transform: scale(0.5) translate(-50%, -50%);
+    }
+    to {
+        transform: scale(1) translate(-50%, -50%);
+    }
+}
+
+.turn {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.home-content {
+    text-align: center;
+    margin-top: 50px;
+    color: #E88D67;
+}
+
+.home-content p {
+    font-size: 1.2em;
+    color: #F3F7EC;
+}
+
+.home-content button {
+    font-size: 1.5em;
+    padding: 10px 30px;
+    cursor: pointer;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    margin: 10px;
+}
+
+.home-content button:hover {
+    background-color: #218838;
+}

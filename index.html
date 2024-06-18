@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="game-container">
+        <h1>Tic-Tac-Toe</h1>
+        <div class="board">
+            <div class="cell" data-index="0" onclick="makeMove(0)"></div>
+            <div class="cell" data-index="1" onclick="makeMove(1)"></div>
+            <div class="cell" data-index="2" onclick="makeMove(2)"></div>
+            <div class="cell" data-index="3" onclick="makeMove(3)"></div>
+            <div class="cell" data-index="4" onclick="makeMove(4)"></div>
+            <div class="cell" data-index="5" onclick="makeMove(5)"></div>
+            <div class="cell" data-index="6" onclick="makeMove(6)"></div>
+            <div class="cell" data-index="7" onclick="makeMove(7)"></div>
+            <div class="cell" data-index="8" onclick="makeMove(8)"></div>
+        </div>
+        <div class="turn-indicator">
+            <span id="player-x-turn" class="turn">X Turn</span>
+            <span id="player-o-turn" class="turn" style="display:none;">O Turn</span>
+        </div>
+        <div id="status-message"></div>
+        <div class="controls">
+            <button onclick="chooseMode('computer')">Play with Computer</button>
+            <button onclick="chooseMode('two-players')">Two Players</button>
+            <button onclick="resetGame()">Reset Game</button>
+        </div>
+        <div class="message-box" id="message-box">
+            <span id="message-content"></span>
+        </div>
+    </div>
+
+    <script>
+        let mode = null;  // Global variable to store current game mode
+        let currentPlayer = 'X';  // Keep track of the current player
+    
+        async function makeMove(position) {
+            if (document.querySelector(`.cell[data-index="${position}"]`).textContent !== '') return; // Prevent move on occupied cell
+            
+            // Send the player's move to the server
+            const response = await fetch('/move', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `position=${position}`
+            });
+            const data = await response.json();
+            updateBoard(data.board);
+            const winner = checkGameStatus(data.winner);
+    
+            // Check if the game is still on and if the AI should take over
+            if (mode === 'computer' && !winner && data.current_player === 'O') {
+                await makeComputerMove();
+            } else if (!winner) {
+                toggleTurn();
+            }
+        }
+    
+        async function makeComputerMove() {
+            toggleTurn(); // Show the turn change to the player before the computer moves
+            // Artificial delay for AI thinking simulation
+            await new Promise(r => setTimeout(r, 300)); 
+            const response = await fetch('/move', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'position=-1'  // Signal for AI move
+            });
+            const data = await response.json();
+            updateBoard(data.board);
+            checkGameStatus(data.winner);
+            if (!data.winner) {
+                toggleTurn();
+            }
+        }
+    
+        async function resetGame() {
+            const response = await fetch('/reset', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            updateBoard(data.board);
+            document.getElementById('status-message').textContent = '';
+            document.getElementById('message-box').style.display = 'none'; // Hide message box
+            document.getElementById('player-x-turn').style.display = 'inline';
+            document.getElementById('player-o-turn').style.display = 'none';
+            currentPlayer = 'X'; // Reset the current player
+            resetTurnHighlight();
+        }
+    
+        async function chooseMode(selectedMode) {
+            const response = await fetch('/mode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `mode=${selectedMode}`
+            });
+            const data = await response.json();
+            mode = data.mode;  // Set the global game mode
+            updateBoard(data.board);  // Reset the game board
+            if (mode === 'computer' && data.current_player === 'O') {
+                await makeComputerMove();  // Start with computer move if chosen
+            }
+        }
+    
+        function updateBoard(board) {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                let symbol = board[index];
+                cell.textContent = symbol !== ' ' ? symbol : '';  // Display X or O
+                cell.style.backgroundColor = ''; // Reset cell background color
+            });
+        }
+    
+        function checkGameStatus(winner) {
+            if (winner) {
+                const message = winner === 'draw' ? "It's a draw!" : `${winner} wins!`;
+                document.getElementById('message-content').textContent = message;
+                document.getElementById('message-box').style.display = 'block'; // Show message box
+                highlightWinningCells(winner);
+                disableBoard();
+                return true;
+            }
+            return false;
+        }
+    
+        function disableBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.onclick = null;  // Disable further clicks on the board
+            });
+        }
+
+        function toggleTurn() {
+            if (currentPlayer === 'X') {
+                currentPlayer = 'O';
+                document.getElementById('player-x-turn').style.display = 'none';
+                document.getElementById('player-o-turn').style.display = 'inline';
+            } else {
+                currentPlayer = 'X';
+                document.getElementById('player-o-turn').style.display = 'none';
+                document.getElementById('player-x-turn').style.display = 'inline';
+            }
+        }
+
+        function resetTurnHighlight() {
+            document.getElementById('player-x-turn').style.backgroundColor = '';
+            document.getElementById('player-o-turn').style.backgroundColor = '';
+        }
+
+        function highlightWinningCells(winner) {
+            const cells = document.querySelectorAll('.cell');
+            const winningCombinations = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+            winningCombinations.forEach(combination => {
+                if (combination.every(index => cells[index].textContent === winner)) {
+                    combination.forEach(index => {
+                        cells[index].style.backgroundColor = 'green';
+                    });
+                }
+            });
+        }
+
+        // Initial board setup
+        document.addEventListener("DOMContentLoaded", function() {
+            updateBoard([' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']);
+        });
+    </script>
+</body>
+</html>
